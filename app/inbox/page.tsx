@@ -1,10 +1,9 @@
-'use client';
+"use client";
 
 import { useEffect, useState } from "react";
 import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
-import Link from 'next/link';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import Link from "next/link";
 
 interface Letter {
@@ -27,13 +26,13 @@ type EmailItem = {
 };
 
 const formatKoreanDate = (dateStr: string): string => {
-  const parts = dateStr.split('.');
+  const parts = dateStr.split(".");
   if (parts.length !== 3) return dateStr;
 
   const year = parseInt(parts[0], 10);
   const month = parseInt(parts[1], 10); // 앞의 0 제거
   const day = parseInt(parts[2], 10); // 앞의 0 제거
-  
+
   return `${year}년 ${month}월 ${day}일`;
 };
 
@@ -61,17 +60,17 @@ export default function InboxPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-300 to-purple-200">
-      <div 
+      <div
         className="fixed inset-0 opacity-10 pointer-events-none"
         style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg width='20' height='20' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='20' height='20' fill='%23000'/%3E%3C/svg%3E")`,
-          backgroundSize: '4px 4px',
-          imageRendering: 'pixelated'
+          backgroundSize: "4px 4px",
+          imageRendering: "pixelated",
         }}
       />
-      
+
       <Header />
-      
+
       <main className="max-w-[500px] mx-auto px-4 pt-20 pb-20">
         <div className="mt-4">
           {error && (
@@ -90,11 +89,22 @@ export default function InboxPage() {
                     </div>
                   </div>
                 </div>
-                <p className="font-bold text-xl text-gray-700">편지함을 불러오는 중...</p>
+                <p className="font-bold text-xl text-gray-700">
+                  편지함을 불러오는 중...
+                </p>
                 <div className="flex gap-1">
-                  <div className="w-2 h-2 bg-purple-500 border border-black animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                  <div className="w-2 h-2 bg-purple-500 border border-black animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                  <div className="w-2 h-2 bg-purple-500 border border-black animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                  <div
+                    className="w-2 h-2 bg-purple-500 border border-black animate-bounce"
+                    style={{ animationDelay: "0ms" }}
+                  ></div>
+                  <div
+                    className="w-2 h-2 bg-purple-500 border border-black animate-bounce"
+                    style={{ animationDelay: "150ms" }}
+                  ></div>
+                  <div
+                    className="w-2 h-2 bg-purple-500 border border-black animate-bounce"
+                    style={{ animationDelay: "300ms" }}
+                  ></div>
                 </div>
               </div>
             </div>
@@ -108,8 +118,12 @@ export default function InboxPage() {
                     <i className="ri-mail-fill text-white text-xl"></i>
                   </div>
                   <div>
-                    <h1 className="font-PressStart2P text-base font-bold">INBOX</h1>
-                    <p className="text-gray-600">총 {emails?.length}통의 편지</p>
+                    <h1 className="font-PressStart2P text-base font-bold">
+                      INBOX
+                    </h1>
+                    <p className="text-gray-600">
+                      총 {emails?.length}통의 편지
+                    </p>
                   </div>
                 </div>
                 <Link
@@ -136,15 +150,17 @@ export default function InboxPage() {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="text-center space-y-2">
-                  <h3 className="font-bold text-xl text-gray-800">아직 받은 편지가 없어요</h3>
+                  <h3 className="font-bold text-xl text-gray-800">
+                    아직 받은 편지가 없어요
+                  </h3>
                   <p className="text-gray-600 text-sm">
                     먼저 편지를 보내보는건 어떨까요?
                   </p>
                 </div>
 
-                <Link 
+                <Link
                   href="/write"
                   className="inline-block px-6 py-3 bg-purple-500 text-white border-2 border-black font-bold transition-all shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:bg-purple-600 active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
                 >
@@ -159,39 +175,65 @@ export default function InboxPage() {
             <div className="space-y-3">
               {emails.map((letter) => {
                 const locked = new Date(letter.openAt).getTime() > Date.now();
-                const openAt = new Date(letter.openAt).toLocaleString("ko-KR", {
-                  timeZone: "Asia/Seoul",
-                  year: "numeric",
-                  month: "2-digit",
-                  day: "2-digit"
-                }).replace(/\./g, '').replace(/\s/g, '.').replace(/-$/, '');
+                const openAt = new Date(letter.openAt)
+                  .toLocaleString("ko-KR", {
+                    timeZone: "Asia/Seoul",
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                  })
+                  .replace(/\./g, "")
+                  .replace(/\s/g, ".")
+                  .replace(/-$/, "");
 
                 return (
                   <Link
                     key={letter.id}
                     href={`/letter/${letter.id}`}
-                    className={`relative group block ${locked ? 'bg-gray-100' : 'bg-white'} border-4 border-black p-4 pixel-shadow hover:translate-x-1 hover:translate-y-1 transition-transform`}
+                    className={`relative group block ${
+                      locked ? "bg-gray-100" : "bg-white"
+                    } border-4 border-black p-4 pixel-shadow hover:translate-x-1 hover:translate-y-1 transition-transform`}
                   >
                     <div className="flex items-start gap-3">
-                      <div className={`w-10 h-10 ${locked ? 'bg-red-500' : 'bg-green-500'} border-2 border-black flex items-center justify-center flex-shrink-0`}>
-                        <i className={`${locked ? 'ri-mail-open-line' : 'ri-lock-fill'} text-white text-xl`}></i>
+                      <div
+                        className={`w-10 h-10 ${
+                          locked ? "bg-red-500" : "bg-green-500"
+                        } border-2 border-black flex items-center justify-center flex-shrink-0`}
+                      >
+                        <i
+                          className={`${
+                            locked ? "ri-mail-open-line" : "ri-lock-fill"
+                          } text-white text-xl`}
+                        ></i>
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2 mb-2">
-                          <h3 className={`text-lg font-bold ${locked ? 'text-gray-500' : 'text-black'} truncate`}>
+                          <h3
+                            className={`text-lg font-bold ${
+                              locked ? "text-gray-500" : "text-black"
+                            } truncate`}
+                          >
                             {letter.subject || "(제목 없음)"}
                           </h3>
-                          <span className={`text-[14px] ${locked ? 'text-gray-400' : 'text-gray-500'} whitespace-nowrap`}>
+                          <span
+                            className={`text-[14px] ${
+                              locked ? "text-gray-400" : "text-gray-500"
+                            } whitespace-nowrap`}
+                          >
                             {new Date(letter.sentAt).toLocaleString("ko-KR", {
                               timeZone: "Asia/Seoul",
                               year: "numeric",
                               month: "2-digit",
-                              day: "2-digit"
+                              day: "2-digit",
                             })}
                           </span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <p className={`text-[14px] ${locked ? 'text-gray-400' : 'text-gray-600'}`}>
+                          <p
+                            className={`text-[14px] ${
+                              locked ? "text-gray-400" : "text-gray-600"
+                            }`}
+                          >
                             <i className="ri-user-fill mr-1"></i>
                             {letter.recipient}
                           </p>
@@ -209,7 +251,8 @@ export default function InboxPage() {
                       <div className="absolute left-1/2 bottom-full mb-2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
                         <div className="bg-red-500 border-2 border-black px-3 py-2 pixel-shadow whitespace-nowrap">
                           <p className="text-[12px] text-white font-bold">
-                            🔒 봉인된 편지는 {formatKoreanDate(openAt)} 전까지 일부 내용만 볼 수 있습니다.
+                            🔒 봉인된 편지는 {formatKoreanDate(openAt)} 전까지
+                            일부 내용만 볼 수 있습니다.
                           </p>
                           <div className="absolute left-1/2 top-full -translate-x-1/2 -mt-[2px]">
                             <div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-black"></div>
@@ -219,13 +262,13 @@ export default function InboxPage() {
                       </div>
                     )}
                   </Link>
-                )}
-              )}
+                );
+              })}
             </div>
           )}
         </div>
       </main>
-      
+
       <Footer />
     </div>
   );
