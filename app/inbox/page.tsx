@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
+import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import Link from "next/link";
+import { formatKoreanDate, formatDateKoreanLocaleString, formatDateKoreanLocaleStringSimplize } from '@/lib/dateUtils';
 
 interface Letter {
   id: number;
@@ -23,17 +24,6 @@ type EmailItem = {
   template: string;
   recipient: string | null;
   senderId: string;
-};
-
-const formatKoreanDate = (dateStr: string): string => {
-  const parts = dateStr.split(".");
-  if (parts.length !== 3) return dateStr;
-
-  const year = parseInt(parts[0], 10);
-  const month = parseInt(parts[1], 10); // 앞의 0 제거
-  const day = parseInt(parts[2], 10); // 앞의 0 제거
-
-  return `${year}년 ${month}월 ${day}일`;
 };
 
 export default function InboxPage() {
@@ -175,21 +165,12 @@ export default function InboxPage() {
             <div className="space-y-3">
               {emails.map((letter) => {
                 const locked = new Date(letter.openAt).getTime() > Date.now();
-                const openAt = new Date(letter.openAt)
-                  .toLocaleString("ko-KR", {
-                    timeZone: "Asia/Seoul",
-                    year: "numeric",
-                    month: "2-digit",
-                    day: "2-digit",
-                  })
-                  .replace(/\./g, "")
-                  .replace(/\s/g, ".")
-                  .replace(/-$/, "");
+                const openAt = formatDateKoreanLocaleStringSimplize(letter.openAt);
 
                 return (
                   <Link
                     key={letter.id}
-                    href={`/letter/${letter.id}`}
+                    href={`/inbox/${letter.id}`}
                     className={`relative group block ${
                       locked ? "bg-gray-100" : "bg-white"
                     } border-4 border-black p-4 pixel-shadow hover:translate-x-1 hover:translate-y-1 transition-transform`}
@@ -220,12 +201,7 @@ export default function InboxPage() {
                               locked ? "text-gray-400" : "text-gray-500"
                             } whitespace-nowrap`}
                           >
-                            {new Date(letter.sentAt).toLocaleString("ko-KR", {
-                              timeZone: "Asia/Seoul",
-                              year: "numeric",
-                              month: "2-digit",
-                              day: "2-digit",
-                            })}
+                            {formatDateKoreanLocaleString(letter.sentAt)}
                           </span>
                         </div>
                         <div className="flex items-center justify-between">

@@ -1,95 +1,70 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from "react";
 import Image from 'next/image';
 import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { getLayoutById } from '@/lib/letterLayouts';
+import { getLayoutByName } from '@/lib/letterLayouts';
+import { formatDateKoreanLocaleStringSimplize } from '@/lib/dateUtils';
 
-interface LetterData {
-  id: number;
-  receivedDate: string;
-  unsealed: string;
-  title: string;
-  sender: string;
-  content: string;
-  layout: number;
-  isUnlocked: boolean;
-}
+type Letter = {
+  id: string;
+  sentAt: string;
+  subject: string | null;
+  openAt: string;
+  body: string;
+  template: string;
+  recipient: string | null;
+  senderId: string;
+  readAt: string | null;
+};
 
 export default function LetterDetail({ letterId }: { letterId: string }) {
   const [isOpening, setIsOpening] = useState(true);
-  const [letter, setLetter] = useState<LetterData | null>(null);
+  const [letter, setLetter] = useState<Letter | null>(null);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    const letters: { [key: string]: LetterData } = {
-      '1': {
-        id: 1,
-        receivedDate: '2024.01.15',
-        unsealed: '2024.02.01',
-        title: '새해 복 많이 받아!',
-        sender: '친구A',
-        content: '안녕! 새해가 밝았네. 올해도 건강하고 행복한 일만 가득하길 바라. 우리 자주 만나자! 항상 응원할게.',
-        layout: 1,
-        isUnlocked: true
-      },
-      '2': {
-        id: 2,
-        receivedDate: '2024.01.20',
-        unsealed: '2024.03.15',
-        title: '생일 축하해~',
-        sender: '친구B',
-        content: '생일 축하해! 네가 태어나줘서 고마워. 앞으로도 좋은 일만 가득하길!',
-        layout: 2,
-        isUnlocked: false
-      },
-      '3': {
-        id: 3,
-        receivedDate: '2024.01.25',
-        unsealed: '2024.02.10',
-        title: '오랜만이야!',
-        sender: '친구C',
-        content: '정말 오랜만이지? 요즘 어떻게 지내? 나는 잘 지내고 있어. 시간 되면 한번 만나서 밥 먹자!',
-        layout: 3,
-        isUnlocked: true
-      },
-      '4': {
-        id: 4,
-        receivedDate: '2024.01.28',
-        unsealed: '2024.12.31',
-        title: '미래의 나에게',
-        sender: '나',
-        content: '1년 후의 나에게. 올해 세웠던 목표들을 잘 이뤘니? 힘든 일도 많았겠지만 잘 버텨줘서 고마워. 내년에도 화이팅!',
-        layout: 4,
-        isUnlocked: false
-      },
-      '5': {
-        id: 5,
-        receivedDate: '2024.02.01',
-        unsealed: '2024.02.14',
-        title: '고마워!',
-        sender: '친구D',
-        content: '지난번에 도와줘서 정말 고마웠어. 네가 있어서 든든해. 앞으로도 좋은 친구로 지내자!',
-        layout: 5,
-        isUnlocked: true
+    let active = true;
+    (async () => {
+      if (!letterId || letterId === "undefined") return;
+      setIsOpening(true);
+      setError(null);
+      try {
+        const res = await fetch(`/api/emails/${letterId}`, {
+          cache: "no-store",
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || "불러오기 실패");
+        if (active) setLetter(json.email as Letter);
+      } catch (e: any) {
+        setError(e);
+      } finally {
+        if (active) setIsOpening(false);
       }
+    })();
+    return () => {
+      active = false;
     };
-
-    setLetter(letters[letterId] || null);
-
-    const timer = setTimeout(() => {
-      setIsOpening(false);
-    }, 1500);
-
-    return () => clearTimeout(timer);
   }, [letterId]);
 
-  if (!letter) {
+  if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-sky-300 to-purple-200 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-xl">편지를 찾을 수 없습니다.</p>
+          <p className="text-xl">{( [error].map((error) => {
+            const errorMessage = error.message;
+            switch (errorMessage) {
+              case "Invalid id":
+              case "Not Found":
+              case "Forbidden":
+                return "편지를 찾을 수 없습니다.";
+
+              default:
+                return error.message;
+            }
+          }).join("") )}</p>
           <Link href="/inbox" className="mt-4 inline-block px-4 py-2 bg-purple-500 text-white border-2 border-black">
             돌아가기
           </Link>
@@ -98,24 +73,21 @@ export default function LetterDetail({ letterId }: { letterId: string }) {
     );
   }
 
-  const layoutStyle = getLayoutById(letter.layout);
-  const displayContent = letter.isUnlocked ? letter.content : letter.content.substring(0, 30) + '...';
-
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-sky-300 to-purple-200">
-      <div 
-        className="fixed inset-0 opacity-10 pointer-events-none"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='20' height='20' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='20' height='20' fill='%23000'/%3E%3C/svg%3E")`,
-          backgroundSize: '4px 4px',
-          imageRendering: 'pixelated'
-        }}
-      />
-      
-      <Header />
-      
-      <main className="max-w-[500px] mx-auto px-4 pt-20 pb-20">
-        {isOpening ? (
+  if (isOpening) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-sky-300 to-purple-200">
+        <div 
+          className="fixed inset-0 opacity-10 pointer-events-none"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='20' height='20' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='20' height='20' fill='%23000'/%3E%3C/svg%3E")`,
+            backgroundSize: '4px 4px',
+            imageRendering: 'pixelated'
+          }}
+        />
+        
+        <Header />
+        
+        <main className="max-w-[500px] mx-auto px-4 pt-20 pb-20">
           <div className="flex flex-col items-center justify-center min-h-[400px]">
             <div className="relative animate-bounce">
               <div className="w-32 h-32 bg-gradient-to-br from-red-400 to-pink-500 border-4 border-black pixel-shadow">
@@ -133,9 +105,35 @@ export default function LetterDetail({ letterId }: { letterId: string }) {
             </div>
             <p className="mt-6 text-xl text-black">편지를 여는 중...</p>
           </div>
-        ) : (
+        </main>
+
+        <Footer />
+
+      </div>
+    );
+  };
+
+  if (!letter) return (null);
+
+  const layoutStyle = getLayoutByName(letter.template);
+  const locked = letter ? new Date(letter.openAt).getTime() > Date.now() : false;
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-sky-300 to-purple-200">
+      <div 
+        className="fixed inset-0 opacity-10 pointer-events-none"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='20' height='20' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='20' height='20' fill='%23000'/%3E%3C/svg%3E")`,
+          backgroundSize: '4px 4px',
+          imageRendering: 'pixelated'
+        }}
+      />
+      
+      <Header />
+      
+      <main className="max-w-[500px] mx-auto px-4 pt-20 pb-20">
           <div className="mt-4">
-            {!letter.isUnlocked ? (
+            {locked ? (
               <div className="relative">
                 <div className="relative bg-gradient-to-br from-red-400 to-pink-500 border-4 border-black p-8 pixel-shadow">
                   <div 
@@ -152,7 +150,7 @@ export default function LetterDetail({ letterId }: { letterId: string }) {
                   </div>
 
                   <div className={`relative mt-16 ${layoutStyle.container} p-6 pixel-shadow overflow-hidden transform rotate-1`}>
-                    {letter.layout !== 4 && (
+                    {layoutStyle.id !== 4 && (
                       <div 
                         className="absolute inset-0 opacity-5"
                         style={{
@@ -175,24 +173,24 @@ export default function LetterDetail({ letterId }: { letterId: string }) {
                     <div className="relative">
                       <div className={`flex items-center justify-between mb-4 border-b-2 border-dashed ${layoutStyle.header}`}>
                         <div className="flex items-center gap-2">
-                          <div className={`w-6 h-6 ${letter.layout === 4 ? 'bg-green-500' : 'bg-red-500'} border-2 border-black flex items-center justify-center`}>
-                            <i className={`ri-mail-open-fill ${letter.layout === 4 ? 'text-black' : 'text-white'} text-sm`}></i>
+                          <div className={`w-6 h-6 ${layoutStyle.id === 4 ? 'bg-green-500' : 'bg-red-500'} border-2 border-black flex items-center justify-center`}>
+                            <i className={`ri-mail-open-fill ${layoutStyle.id === 4 ? 'text-black' : 'text-white'} text-sm`}></i>
                           </div>
-                          <div className={`flex gap-2 text-sm ${letter.layout === 4 ? 'text-green-500' : 'text-gray-500'}`}>
-                            <span>수신: {letter.receivedDate}</span>
+                          <div className={`flex gap-2 text-sm ${layoutStyle.id === 4 ? 'text-green-500' : 'text-gray-500'}`}>
+                            <span>수신: {formatDateKoreanLocaleStringSimplize(letter.sentAt)}</span>
                             <span>|</span>
-                            <span>개봉: {letter.unsealed}</span>
+                            <span>개봉: {formatDateKoreanLocaleStringSimplize(letter.openAt)}</span>
                           </div>
                         </div>
                       </div>
 
-                      <h1 className={`text-lg font-bold mb-6 text-center ${layoutStyle.font} ${layoutStyle.title} pb-3 border-b-2 ${letter.layout === 4 ? 'border-green-500' : layoutStyle.header.includes('pink') ? 'border-pink-300' : layoutStyle.header.includes('amber') ? 'border-amber-300' : layoutStyle.header.includes('orange') ? 'border-orange-300' : 'border-purple-300'}`}>
-                        {letter.title}
+                      <h1 className={`text-lg font-bold mb-6 text-center ${layoutStyle.font} ${layoutStyle.title} pb-3 border-b-2 ${layoutStyle.id === 4 ? 'border-green-500' : layoutStyle.header.includes('pink') ? 'border-pink-300' : layoutStyle.header.includes('amber') ? 'border-amber-300' : layoutStyle.header.includes('orange') ? 'border-orange-300' : 'border-purple-300'}`}>
+                        {letter.subject}
                       </h1>
 
                       <div className="min-h-[120px] mb-6 relative">
                         <p className={`leading-relaxed ${layoutStyle.font} ${layoutStyle.content} whitespace-pre-wrap`}>
-                          {displayContent}
+                          {letter.body}
                         </p>
                         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white/95 flex items-end justify-center pb-4">
                           <div className="text-center">
@@ -213,7 +211,7 @@ export default function LetterDetail({ letterId }: { letterId: string }) {
                       <div>
                         <p className="text-md font-bold text-red-700 mb-1">🔒 봉인된 편지</p>
                         <p className="text-sm text-red-600">
-                          이 편지는 {letter.unsealed}에 봉인이 해제됩니다.
+                          이 편지는 {formatDateKoreanLocaleStringSimplize(letter.openAt)}에 봉인이 해제됩니다.
                         </p>
                       </div>
                     </div>
@@ -222,7 +220,7 @@ export default function LetterDetail({ letterId }: { letterId: string }) {
               </div>
             ) : (
               <div className={`relative ${layoutStyle.container} p-6 pixel-shadow overflow-hidden`}>
-                {letter.layout !== 4 && (
+                {layoutStyle.id !== 4 && (
                   <div 
                     className="absolute inset-0 opacity-5"
                     style={{
@@ -245,31 +243,31 @@ export default function LetterDetail({ letterId }: { letterId: string }) {
                 <div className="relative">
                   <div className={`flex items-center justify-between mb-4 border-b-2 border-dashed ${layoutStyle.header}`}>
                     <div className="flex items-center gap-2">
-                      <div className={`w-6 h-6 ${letter.layout === 4 ? 'bg-green-500' : 'bg-red-500'} border-2 border-black flex items-center justify-center`}>
-                        <i className={`ri-mail-open-fill ${letter.layout === 4 ? 'text-black' : 'text-white'} text-sm`}></i>
+                      <div className={`w-6 h-6 ${layoutStyle.id === 4 ? 'bg-green-500' : 'bg-red-500'} border-2 border-black flex items-center justify-center`}>
+                        <i className={`ri-mail-open-fill ${layoutStyle.id === 4 ? 'text-black' : 'text-white'} text-sm`}></i>
                       </div>
-                      <div className={`flex gap-2 ${letter.layout === 4 ? 'text-green-500' : 'text-gray-500'}`}>
-                        <span>수신: {letter.receivedDate}</span>
+                      <div className={`flex gap-2 ${layoutStyle.id === 4 ? 'text-green-500' : 'text-gray-500'}`}>
+                        <span>수신: {formatDateKoreanLocaleStringSimplize(letter.sentAt)}</span>
                         <span>|</span>
-                        <span>개봉: {letter.unsealed}</span>
+                        <span>개봉: {formatDateKoreanLocaleStringSimplize(letter.openAt)}</span>
                       </div>
                     </div>
                   </div>
 
-                  <h1 className={`text-lg font-bold mb-6 text-center ${layoutStyle.font} ${layoutStyle.title} pb-3 border-b-2 ${letter.layout === 4 ? 'border-green-500' : layoutStyle.header.includes('pink') ? 'border-pink-300' : layoutStyle.header.includes('amber') ? 'border-amber-300' : layoutStyle.header.includes('orange') ? 'border-orange-300' : 'border-purple-300'}`}>
-                    {letter.title}
+                  <h1 className={`text-lg font-bold mb-6 text-center ${layoutStyle.font} ${layoutStyle.title} pb-3 border-b-2 ${layoutStyle.id === 4 ? 'border-green-500' : layoutStyle.header.includes('pink') ? 'border-pink-300' : layoutStyle.header.includes('amber') ? 'border-amber-300' : layoutStyle.header.includes('orange') ? 'border-orange-300' : 'border-purple-300'}`}>
+                    {letter.subject}
                   </h1>
 
                   <div className="min-h-[200px] mb-6 relative">
                     <p className={`leading-relaxed ${layoutStyle.font} ${layoutStyle.content} whitespace-pre-wrap`}>
-                      {displayContent}
+                      {letter.body}
                     </p>
                   </div>
 
                   <div className="flex justify-end">
                     <div className="text-right">
-                      <p className={`text-xs ${letter.layout === 4 ? 'text-green-500' : 'text-gray-600'} mb-1`}>보낸이</p>
-                      <p className={`text-sm font-bold ${layoutStyle.font} ${layoutStyle.content}`}>{letter.sender}</p>
+                      <p className={`text-xs ${layoutStyle.id === 4 ? 'text-green-500' : 'text-gray-600'} mb-1`}>보낸이</p>
+                      <p className={`text-sm font-bold ${layoutStyle.font} ${layoutStyle.content}`}>{letter.recipient}</p>
                     </div>
                   </div>
 
@@ -292,10 +290,10 @@ export default function LetterDetail({ letterId }: { letterId: string }) {
               </Link>
             </div>
           </div>
-        )}
       </main>
-      
+
       <Footer />
+
     </div>
   );
 }
