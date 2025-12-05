@@ -189,17 +189,25 @@ export default function LetterDetail({ letterId }: { letterId: string }) {
                       </h1>
 
                       <div className="min-h-[120px] mb-6 relative">
-                        <p className={`leading-relaxed ${layoutStyle.font} ${layoutStyle.content} whitespace-pre-wrap`}>
-                          {letter.body}
+                        <p className={`leading-relaxed ${layoutStyle.font} ${layoutStyle.content} whitespace-pre-wrap break-words`}>
+                          {letter.body}...
                         </p>
+
                         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white/95 flex items-end justify-center pb-4">
                           <div className="text-center">
-                            {/* <i className="ri-lock-fill text-gray-400 text-3xl mb-2"></i> */}
                             <span className="text-2xl mb-2">😜</span>
                             <p className="text-xs text-gray-600 font-bold">봉인이 풀리면 모든 내용을 읽을 수 있을거에요</p>
                           </div>
                         </div>
                       </div>
+
+                      <div className="flex justify-end">
+                        <div className="text-right">
+                          <p className={`text-xs ${layoutStyle.id === 4 ? 'text-green-500' : 'text-gray-600'} mb-1`}>보낸이</p>
+                          <p className={`text-sm font-bold ${layoutStyle.font} ${layoutStyle.content}`}>{letter.recipient}</p>
+                        </div>
+                      </div>
+
                     </div>
                   </div>
 
@@ -259,7 +267,7 @@ export default function LetterDetail({ letterId }: { letterId: string }) {
                   </h1>
 
                   <div className="min-h-[200px] mb-6 relative">
-                    <p className={`leading-relaxed ${layoutStyle.font} ${layoutStyle.content} whitespace-pre-wrap`}>
+                    <p className={`leading-relaxed ${layoutStyle.font} ${layoutStyle.content} whitespace-pre-wrap break-words`}>
                       {letter.body}
                     </p>
                   </div>

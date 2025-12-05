@@ -199,7 +199,7 @@ export default function WritePage() {
                 className="w-full px-3 py-2 border-2 border-gray-300 text-left focus:outline-none focus:border-purple-500 hover:bg-gray-50 transition-colors flex items-center justify-between"
               >
                 <span className={recipient ? 'text-gray-900' : 'text-gray-400'}>
-                  {`${recipient?.name} (${recipient?.email})` || '받는 사람을 선택하세요'}
+                  {(recipient ? `${recipient?.name} (${recipient?.email})` : '받는 사람을 선택하세요')}
                 </span>
                 <i className="ri-arrow-down-s-line text-gray-400"></i>
               </button>
@@ -275,7 +275,7 @@ export default function WritePage() {
               </div>
               <div className="mt-2 flex items-center justify-end text-sm">
                 <p className={`font-bold ${content.trim().length >= 30 ? 'text-green-600' : 'text-red-500'}`}>
-                  {content.trim().length} / 30
+                  {content.trim().length}
                 </p>
               </div>
             </div>
