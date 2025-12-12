@@ -22,7 +22,7 @@ export async function GET() {
   const { data, error } = await supabaseAdmin
     .from("emails")
     .select(
-      "id, sender_id, recipient_id, recipient_google_id, subject, body, created_at, open_at, template"
+      "id, sender_id, sender_google_id, recipient_id, recipient_google_id, subject, body, created_at, open_at, template"
     )
     .or(
       myEmail
@@ -48,6 +48,7 @@ export async function GET() {
         openAt: row.open_at,
         body,
         template: row.template,
+        sender: row.sender_google_id ?? row.sender_id,
         recipient: row.recipient_google_id ?? row.recipient_id,
         senderId: row.sender_id,
       };
@@ -71,6 +72,10 @@ export async function POST(req: Request) {
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  const user = await currentUser();
+  const myEmail =
+  user?.emailAddresses.find((e) => e.id === user.primaryEmailAddressId)
+    ?.emailAddress ?? user?.emailAddresses[0]?.emailAddress;
 
   const json = await req.json().catch(() => null);
   const parsed = postSchema.safeParse(json);
@@ -117,6 +122,7 @@ export async function POST(req: Request) {
     .from("emails")
     .insert({
       sender_id: userId,
+      sender_google_id: myEmail,
       recipient_id: recipientUserId ?? null,
       recipient_google_id: recipientEmail,
       subject: subject ?? null,

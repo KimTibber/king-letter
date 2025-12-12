@@ -15,7 +15,7 @@ type Letter = {
   openAt: string;
   body: string;
   template: string;
-  recipient: string | null;
+  sender: string | null;
   senderId: string;
   readAt: string | null;
 };
@@ -204,7 +204,7 @@ export default function LetterDetail({ letterId }: { letterId: string }) {
                       <div className="flex justify-end">
                         <div className="text-right">
                           <p className={`text-xs ${layoutStyle.id === 4 ? 'text-green-500' : 'text-gray-600'} mb-1`}>보낸이</p>
-                          <p className={`text-sm font-bold ${layoutStyle.font} ${layoutStyle.content}`}>{letter.recipient}</p>
+                          <p className={`text-sm font-bold ${layoutStyle.font} ${layoutStyle.content}`}>{letter.sender}</p>
                         </div>
                       </div>
 
@@ -275,7 +275,7 @@ export default function LetterDetail({ letterId }: { letterId: string }) {
                   <div className="flex justify-end">
                     <div className="text-right">
                       <p className={`text-xs ${layoutStyle.id === 4 ? 'text-green-500' : 'text-gray-600'} mb-1`}>보낸이</p>
-                      <p className={`text-sm font-bold ${layoutStyle.font} ${layoutStyle.content}`}>{letter.recipient}</p>
+                      <p className={`text-sm font-bold ${layoutStyle.font} ${layoutStyle.content}`}>{letter.sender}</p>
                     </div>
                   </div>
 

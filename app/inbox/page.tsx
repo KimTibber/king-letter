@@ -22,7 +22,7 @@ type EmailItem = {
   openAt: string;
   body: string;
   template: string;
-  recipient: string | null;
+  sender: string | null;
   senderId: string;
 };
 
@@ -211,7 +211,7 @@ export default function InboxPage() {
                             }`}
                           >
                             <i className="ri-user-fill mr-1"></i>
-                            {letter.recipient}
+                            {letter.sender}
                           </p>
                           {locked && (
                             <span className="text-[12px] text-red-600 font-bold">

@@ -29,7 +29,7 @@ export async function GET(
   const { data, error } = await supabaseAdmin
     .from("emails")
     .select(
-      "id, sender_id, recipient_id, recipient_google_id, subject, body, created_at, open_at, template, read_at"
+      "id, sender_id, sender_google_id, recipient_id, recipient_google_id, subject, body, created_at, open_at, template, read_at"
     )
     .eq("id", id)
     .limit(1)
@@ -61,6 +61,16 @@ export async function GET(
   const safeBody = locked
     ? String(data.body ?? "").slice(0, 10)
     : (data.body as string);
+  
+  // 읽은 시간 업데이트
+  if (!data.read_at) {
+    const { error } = await supabaseAdmin.from("emails").update({
+      read_at: new Date().toISOString(),
+    }).eq("id", id);
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+  }
 
   const email = {
     id: data.id as string,
@@ -70,6 +80,7 @@ export async function GET(
     body: safeBody,
     template: data.template as string,
     recipient: (data.recipient_google_id as string | null) ?? data.recipient_id,
+    sender: (data.sender_google_id as string | null) ?? data.sender_id,
     senderId: data.sender_id as string,
     readAt: (data.read_at as string | null) ?? null,
   };

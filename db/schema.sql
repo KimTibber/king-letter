@@ -5,6 +5,7 @@ create extension if not exists pgcrypto;
 create table if not exists public.emails (
   id uuid primary key default gen_random_uuid(),
   sender_id text not null,
+  sender_google_id text,
   recipient_id text,
   -- 수신자의 구글 로그인 식별자(이메일 또는 sub 등)를 저장할 수 있는 필드
   recipient_google_id text,
